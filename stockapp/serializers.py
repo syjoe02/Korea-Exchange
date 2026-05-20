@@ -1,6 +1,10 @@
+import logging
+
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from .models import KospiData
+
+logger = logging.getLogger(__name__)
 
 from djoser.serializers import (
     UserCreateSerializer as BaseUserCreateSerializer,
@@ -30,14 +34,14 @@ class CustomTokenCreateSerializer(serializers.Serializer):
         if username_or_email and password:
             # Distingush between email and username
             if "@" in username_or_email:
-                print(f"Trying to authenticate with email: {username_or_email}")
+                logger.debug("Trying to authenticate with email: %s", username_or_email)
                 user = authenticate(
                     request=self.context.get("request"),
                     email=username_or_email,
                     password=password,
                 )
             else:
-                print(f"Trying to authenticate with email: {username_or_email}")
+                logger.debug("Trying to authenticate with username: %s", username_or_email)
                 user = authenticate(
                     request=self.context.get("request"),
                     username=username_or_email,
@@ -45,12 +49,12 @@ class CustomTokenCreateSerializer(serializers.Serializer):
                 )
 
             if not user:
-                print("Authentication failed. Invalid credentials.")
+                logger.warning("Authentication failed for: %s", username_or_email)
                 raise serializers.ValidationError(
                     "Invalid credentials (only email and username)"
                 )
             else:
-                print(f"authenticated user: {user}")
+                logger.debug("Authenticated user: %s", user)
         else:
             raise serializers.ValidationError("Both fields are required")
 
